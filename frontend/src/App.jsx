@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import './App.css';
@@ -20,39 +21,20 @@ function App() {
     if (loading) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-gray-600">Loading...</div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
       );
     }
     
-    return isAuthenticated ? children : <Navigate to="/" />;
-  };
-
-  // Public route wrapper (redirect to dashboard if already logged in)
-  const PublicRoute = ({ children }) => {
-    if (loading) {
-      return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-gray-600">Loading...</div>
-        </div>
-      );
-    }
-    
-    return !isAuthenticated ? children : <Navigate to="/dashboard" />;
+    return isAuthenticated ? children : <Navigate to="/login" />;
   };
 
   return (
     <Router>
       <div className="App">
         <Routes>
-          <Route 
-            path="/" 
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            } 
-          />
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
           <Route 
             path="/dashboard" 
             element={
@@ -68,4 +50,5 @@ function App() {
   );
 }
 
-export default App
+export default App;
+
