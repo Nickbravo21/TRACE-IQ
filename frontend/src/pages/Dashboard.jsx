@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getProjects, getLogs, explainLog, createProject } from '../services/api';
-import Navbar from '../components/Navbar';
+import { Sparkles, Search, Plus, AlertCircle, TrendingUp, Zap, ChevronDown, Loader2, X } from 'lucide-react';
 
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
@@ -16,6 +17,8 @@ const Dashboard = () => {
     limit: 50,
     hasMore: true
   });
+
+  const userId = localStorage.getItem('traceiq_user_id') || 'Anonymous';
 
   useEffect(() => {
     loadProjects();
@@ -83,33 +86,11 @@ const Dashboard = () => {
       );
     } catch (error) {
       console.error('Error explaining log:', error);
-      alert('Failed to get AI explanation. Please try again.');
     }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    setPagination(prev => ({ ...prev, offset: 0 }));
-  };
-
-  const handleLoadMore = () => {
-    if (!loading && pagination.hasMore) {
-      loadLogs(pagination.offset, true);
-    }
-  };
-
-  const handleProjectChange = (projectId) => {
-    const project = projects.find(p => p.id === projectId);
-    setSelectedProject(project);
-    setLogs([]);
-    setPagination(prev => ({ ...prev, offset: 0 }));
   };
 
   const handleCreateProject = async () => {
-    if (!newProjectName.trim()) {
-      alert('Please enter a project name');
-      return;
-    }
+    if (!newProjectName.trim()) return;
 
     try {
       const userId = localStorage.getItem('traceiq_user_id') || 'anonymous';
@@ -124,8 +105,12 @@ const Dashboard = () => {
       setShowCreateProject(false);
     } catch (error) {
       console.error('Error creating project:', error);
-      alert('Failed to create project. Please try again.');
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('traceiq_user_id');
+    window.location.href = '/';
   };
 
   const formatDate = (dateString) => {
@@ -140,134 +125,197 @@ const Dashboard = () => {
     return date.toLocaleDateString();
   };
 
-  const getSeverityColor = (message) => {
-    const lowerMsg = message.toLowerCase();
-    if (lowerMsg.includes('critical') || lowerMsg.includes('fatal')) return 'text-red-700 bg-red-50';
-    if (lowerMsg.includes('error')) return 'text-red-600 bg-red-50';
-    if (lowerMsg.includes('warning')) return 'text-yellow-600 bg-yellow-50';
-    return 'text-gray-600 bg-gray-50';
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Track and resolve errors with AI-powered insights</p>
-        </div>
-
-        {/* Project Selector & Stats */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {/* Project Card */}
-          <div className="bg-white rounded-xl p-6 shadow-soft">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Current Project</h3>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/20">
+      {/* Navbar */}
+      <motion.nav
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 border-b border-gray-100"
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                TraceIQ
+              </span>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
+                  <span className="text-sm font-semibold text-white">
+                    {userId.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-sm font-medium text-gray-700 hidden sm:inline">
+                  {userId}
+                </span>
+              </div>
               <button
-                onClick={() => setShowCreateProject(true)}
-                className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                onClick={handleLogout}
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg hover:bg-gray-50"
               >
-                + New
+                Sign out
               </button>
+            </div>
+          </div>
+        </div>
+      </motion.nav>
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
+          <p className="text-gray-600">Track and resolve errors with AI-powered insights</p>
+        </motion.div>
+
+        {/* Stats Cards */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ y: -4 }}
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary-200 hover:shadow-soft-lg transition-all duration-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900">Projects</h3>
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowCreateProject(true)}
+                className="w-8 h-8 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center hover:bg-primary-100 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+              </motion.button>
             </div>
             
             {projects.length > 0 ? (
               <div className="space-y-2">
                 {projects.map(project => (
-                  <button
+                  <motion.button
                     key={project.id}
-                    onClick={() => handleProjectChange(project.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                    whileHover={{ x: 4 }}
+                    onClick={() => setSelectedProject(project)}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-all ${
                       selectedProject?.id === project.id
-                        ? 'bg-primary-50 text-primary-700 font-medium'
+                        ? 'bg-gradient-primary text-white shadow-glow'
                         : 'hover:bg-gray-50 text-gray-700'
                     }`}
                   >
                     {project.name}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             ) : (
               <p className="text-sm text-gray-500">No projects yet</p>
             )}
-          </div>
+          </motion.div>
 
-          {/* Stats Cards */}
-          <div className="bg-white rounded-xl p-6 shadow-soft">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ y: -4 }}
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-red-200 hover:shadow-soft-lg transition-all duration-300"
+          >
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-gray-600">Total Errors</h3>
-              <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+              <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-red-600" />
               </div>
             </div>
             <p className="text-3xl font-bold text-gray-900">{logs.length}</p>
             <p className="text-sm text-gray-500 mt-1">In current view</p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl p-6 shadow-soft">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            whileHover={{ y: -4 }}
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary-200 hover:shadow-soft-lg transition-all duration-300"
+          >
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-gray-600">AI Insights</h3>
-              <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
+              <div className="w-10 h-10 bg-gradient-soft rounded-xl flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary-600" />
               </div>
             </div>
             <p className="text-3xl font-bold text-gray-900">
               {logs.filter(log => log.explanation).length}
             </p>
             <p className="text-sm text-gray-500 mt-1">Errors explained</p>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Search Bar */}
+        {/* Search */}
         {selectedProject && (
-          <div className="bg-white rounded-xl p-4 shadow-soft mb-6">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white rounded-2xl p-4 border border-gray-100 mb-6"
+          >
             <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search errors by message or URL..."
+                placeholder="Search errors..."
                 value={searchQuery}
-                onChange={handleSearchChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
-              <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Logs List */}
         {selectedProject && (
           <div className="space-y-4">
-            {loading && logs.length === 0 ? (
-              <div className="bg-white rounded-xl p-12 shadow-soft text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                <p className="mt-4 text-gray-600">Loading errors...</p>
-              </div>
-            ) : logs.length === 0 ? (
-              <div className="bg-white rounded-xl p-12 shadow-soft text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No errors found</h3>
-                <p className="text-gray-600">
-                  {searchQuery ? `No errors match "${searchQuery}"` : 'Start tracking errors to see them here'}
-                </p>
-              </div>
-            ) : (
-              <>
-                {logs.map((log) => (
-                  <div
+            <AnimatePresence>
+              {loading && logs.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="bg-white rounded-2xl p-12 text-center border border-gray-100"
+                >
+                  <Loader2 className="w-8 h-8 text-primary-600 animate-spin mx-auto mb-4" />
+                  <p className="text-gray-600">Loading errors...</p>
+                </motion.div>
+              ) : logs.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-white rounded-2xl p-12 text-center border border-gray-100"
+                >
+                  <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No errors found</h3>
+                  <p className="text-gray-600">
+                    {searchQuery ? `No errors match "${searchQuery}"` : 'Start tracking errors to see them here'}
+                  </p>
+                </motion.div>
+              ) : (
+                logs.map((log, index) => (
+                  <motion.div
                     key={log.id}
-                    className="bg-white rounded-xl shadow-soft hover:shadow-soft-lg transition-shadow overflow-hidden"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ y: -2 }}
+                    className="bg-white rounded-2xl border border-gray-100 hover:border-primary-200 hover:shadow-soft-lg transition-all duration-300 overflow-hidden"
                   >
                     <div
                       className="p-6 cursor-pointer"
@@ -276,7 +324,7 @@ const Dashboard = () => {
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-2">
-                            <span className={`px-2 py-1 text-xs font-medium rounded ${getSeverityColor(log.message)}`}>
+                            <span className="px-2 py-1 text-xs font-medium rounded bg-red-50 text-red-700">
                               ERROR
                             </span>
                             <span className="text-sm text-gray-500">{formatDate(log.occurred_at)}</span>
@@ -290,164 +338,183 @@ const Dashboard = () => {
                         </div>
                         
                         <div className="flex items-center space-x-2 ml-4">
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleExplainLog(log.id);
                             }}
                             disabled={!!log.explanation}
-                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                            className={`px-4 py-2 rounded-xl font-medium transition-all ${
                               log.explanation
                                 ? 'bg-green-50 text-green-700 cursor-default'
-                                : 'bg-primary-600 text-white hover:bg-primary-700'
+                                : 'bg-gradient-primary text-white shadow-glow hover:shadow-glow-lg'
                             }`}
                           >
                             {log.explanation ? (
                               <span className="flex items-center space-x-1">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
+                                <Sparkles className="w-4 h-4" />
                                 <span>Explained</span>
                               </span>
                             ) : (
                               'Explain with AI'
                             )}
-                          </button>
-                          <svg
-                            className={`w-5 h-5 text-gray-400 transition-transform ${
-                              expandedLog === log.id ? 'transform rotate-180' : ''
-                            }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                          </motion.button>
+                          <motion.div
+                            animate={{ rotate: expandedLog === log.id ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
+                            <ChevronDown className="w-5 h-5 text-gray-400" />
+                          </motion.div>
                         </div>
                       </div>
                     </div>
 
-                    {expandedLog === log.id && (
-                      <div className="border-t border-gray-100 bg-gray-50 p-6 space-y-4">
-                        {log.explanation && (
-                          <div className="bg-primary-50 rounded-lg p-4 border border-primary-100">
-                            <div className="flex items-start space-x-2 mb-2">
-                              <svg className="w-5 h-5 text-primary-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                              </svg>
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-primary-900 mb-2">AI Explanation</h4>
-                                <p className="text-sm text-primary-800 leading-relaxed whitespace-pre-wrap">
-                                  {log.explanation}
-                                </p>
+                    <AnimatePresence>
+                      {expandedLog === log.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="border-t border-gray-100 bg-gradient-soft p-6 space-y-4"
+                        >
+                          {log.explanation && (
+                            <div className="bg-white rounded-xl p-4 border border-primary-100">
+                              <div className="flex items-start space-x-2">
+                                <Sparkles className="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" />
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-primary-900 mb-2">AI Explanation</h4>
+                                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                    {log.explanation}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        {log.stack_trace && (
-                          <div>
-                            <h4 className="font-semibold text-gray-900 mb-2">Stack Trace</h4>
-                            <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto">
-                              {log.stack_trace}
-                            </pre>
-                          </div>
-                        )}
-
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="font-medium text-gray-700">Timestamp:</span>
-                            <p className="text-gray-600">{new Date(log.occurred_at).toLocaleString()}</p>
-                          </div>
-                          {log.user_agent && (
+                          {log.stack_trace && (
                             <div>
-                              <span className="font-medium text-gray-700">User Agent:</span>
-                              <p className="text-gray-600 truncate">{log.user_agent}</p>
+                              <h4 className="font-semibold text-gray-900 mb-2">Stack Trace</h4>
+                              <pre className="bg-gray-900 text-gray-100 p-4 rounded-xl text-xs overflow-x-auto">
+                                {log.stack_trace}
+                              </pre>
                             </div>
                           )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ))
+              )}
+            </AnimatePresence>
 
-                {pagination.hasMore && (
-                  <div className="text-center py-6">
-                    <button
-                      onClick={handleLoadMore}
-                      disabled={loading}
-                      className="bg-white text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors shadow-soft disabled:opacity-50"
-                    >
-                      {loading ? 'Loading...' : 'Load More'}
-                    </button>
-                  </div>
-                )}
-              </>
+            {pagination.hasMore && !loading && logs.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-6"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => loadLogs(pagination.offset, true)}
+                  className="px-6 py-3 bg-white text-gray-700 rounded-xl font-medium border border-gray-200 hover:border-gray-300 hover:shadow-soft transition-all"
+                >
+                  Load more
+                </motion.button>
+              </motion.div>
             )}
           </div>
         )}
 
         {/* No Project State */}
         {!selectedProject && projects.length === 0 && (
-          <div className="bg-white rounded-xl p-12 shadow-soft text-center">
-            <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl p-12 text-center border border-gray-100"
+          >
+            <div className="w-16 h-16 bg-gradient-soft rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Plus className="w-8 h-8 text-primary-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to TraceIQ</h2>
             <p className="text-gray-600 mb-6">Create your first project to start tracking errors</p>
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setShowCreateProject(true)}
-              className="bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors shadow-soft"
+              className="px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold shadow-glow hover:shadow-glow-lg transition-all"
             >
               Create Your First Project
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         )}
       </div>
 
       {/* Create Project Modal */}
-      {showCreateProject && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-soft-lg">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Create New Project</h3>
-            <div className="mb-6">
-              <label htmlFor="project-name" className="block text-sm font-medium text-gray-700 mb-2">
-                Project Name
-              </label>
-              <input
-                id="project-name"
-                type="text"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-                placeholder="My Awesome App"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                onKeyPress={(e) => e.key === 'Enter' && handleCreateProject()}
-                autoFocus
-              />
-              <p className="text-xs text-gray-500 mt-2">Choose a descriptive name for your project</p>
-            </div>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  setShowCreateProject(false);
-                  setNewProjectName('');
-                }}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateProject}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
-              >
-                Create Project
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showCreateProject && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+            onClick={() => setShowCreateProject(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl p-6 w-full max-w-md shadow-soft-lg"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Create New Project</h3>
+                <button
+                  onClick={() => setShowCreateProject(false)}
+                  className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <div className="mb-6">
+                <label htmlFor="project-name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Project Name
+                </label>
+                <input
+                  id="project-name"
+                  type="text"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  placeholder="My Awesome App"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  onKeyPress={(e) => e.key === 'Enter' && handleCreateProject()}
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCreateProject(false)}
+                  className="flex-1 px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleCreateProject}
+                  className="flex-1 px-4 py-2 bg-gradient-primary text-white rounded-xl font-medium hover:shadow-glow transition-all"
+                >
+                  Create
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
