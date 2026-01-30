@@ -1,193 +1,107 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowLeft, Check } from 'lucide-react';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 
 const Login = () => {
-  const [userId, setUserId] = useState('');
-  const [error, setError] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
-    
-    if (!userId.trim()) {
-      setError('Please enter a user ID');
-      return;
-    }
-    
-    if (userId.trim().length < 2) {
-      setError('User ID must be at least 2 characters');
-      return;
-    }
-    
-    localStorage.setItem('traceiq_user_id', userId.trim());
-    window.location.href = '/dashboard';
+    // Demo login - just store a user ID
+    localStorage.setItem('userId', 'demo-user-123');
+    navigate('/dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/30 flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-primary opacity-5 blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.3, 1],
-            rotate: [0, -90, 0],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-primary opacity-5 blur-3xl"
-        />
-      </div>
-
-      {/* Back Link */}
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-md mb-4 relative z-10"
+    <div className="min-h-screen bg-background-main flex items-center justify-center p-6">
+      {/* Back to home link */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 flex items-center space-x-2 text-text-secondary hover:text-brand transition-colors group"
       >
-        <Link to="/" className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm font-medium">Back to home</span>
-        </Link>
-      </motion.div>
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <span className="font-medium">Back</span>
+      </Link>
 
       {/* Login Card */}
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="max-w-md w-full relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative w-full max-w-md"
       >
-        <div className="bg-white rounded-2xl shadow-soft-lg p-8 border border-gray-100">
-          <div className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.3, type: "spring" }}
-              className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow"
-            >
-              <Sparkles className="w-8 h-8 text-white" />
-            </motion.div>
-            <motion.h1
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-3xl font-bold text-gray-900 mb-2"
-            >
-              Welcome back
-            </motion.h1>
-            <motion.p
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="text-gray-600"
-            >
-              Sign in to start tracking errors
-            </motion.p>
+        <div className="bg-white rounded-2xl shadow-card p-10">
+          {/* Logo */}
+          <div className="flex items-center justify-center space-x-2 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-brand flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-text-primary">TraceIQ</h1>
           </div>
 
-          <motion.form
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            onSubmit={handleLogin}
-            className="space-y-6"
-          >
+          {/* Title */}
+          <h2 className="text-3xl font-bold text-text-primary text-center mb-2 mt-6">
+            {isLogin ? 'Welcome back' : 'Create account'}
+          </h2>
+          <p className="text-text-secondary text-center mb-8">
+            {isLogin ? 'Sign in to your account' : 'Start tracking errors smarter'}
+          </p>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="userId" className="block text-sm font-semibold text-gray-700 mb-2">
-                User ID
+              <label className="block text-sm font-semibold text-text-primary mb-2">
+                Email
               </label>
               <input
-                id="userId"
-                type="text"
-                value={userId}
-                onChange={(e) => {
-                  setUserId(e.target.value);
-                  setError('');
-                }}
-                placeholder="Enter your username"
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                  error
-                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                    : 'border-gray-200 focus:ring-primary-500 focus:border-transparent'
-                }`}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all text-text-primary placeholder:text-text-muted"
                 required
               />
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-sm text-red-600 mt-2"
-                >
-                  {error}
-                </motion.p>
-              )}
-              {!error && (
-                <p className="text-xs text-gray-500 mt-2">
-                  Demo mode: enter any username (e.g., nick, sarah, alex)
-                </p>
-              )}
             </div>
 
-            <motion.button
+            <div>
+              <label className="block text-sm font-semibold text-text-primary mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all text-text-primary placeholder:text-text-muted"
+                required
+              />
+            </div>
+
+            <button
               type="submit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-primary text-white py-3 px-4 rounded-xl font-semibold hover:shadow-glow transition-all duration-300"
+              className="w-full py-3.5 bg-brand text-white font-semibold rounded-lg shadow-brand hover:bg-brand-hover hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300"
             >
-              Sign in
-            </motion.button>
-          </motion.form>
+              {isLogin ? 'Sign in' : 'Create account'}
+            </button>
+          </form>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-            className="mt-8 pt-6 border-t border-gray-100"
-          >
-            <p className="text-xs text-gray-500 text-center mb-4">What you'll get:</p>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                'Real-time tracking',
-                'AI explanations',
-                'Multi-project',
-                'Smart search'
-              ].map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.8 + index * 0.1 }}
-                  className="flex items-center space-x-2"
-                >
-                  <div className="w-5 h-5 rounded-full bg-primary-50 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-3 h-3 text-primary-600" />
-                  </div>
-                  <span className="text-sm text-gray-700">{feature}</span>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+          {/* Toggle */}
+          <p className="text-center mt-6 text-text-secondary">
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-brand font-semibold hover:underline transition-all"
+            >
+              {isLogin ? 'Sign up' : 'Sign in'}
+            </button>
+          </p>
         </div>
       </motion.div>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.9 }}
-        className="mt-8 text-sm text-gray-500 text-center max-w-md relative z-10"
-      >
-        Demo environment. Your data is stored locally.
-      </motion.p>
     </div>
   );
 };
